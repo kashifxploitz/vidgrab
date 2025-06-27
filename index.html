@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VidGrab - Universal Video Downloader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 1s ease;
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            color: white;
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            animation: fadeInUp 1s ease 0.3s both;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .platforms {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .platform {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            transform: translateY(0);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .platform:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .platform.tiktok { background: linear-gradient(135deg, #ff0050 0%, #ff4081 100%); }
+        .platform.instagram { background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%); }
+        .platform.youtube { background: linear-gradient(135deg, #ff0000 0%, #ff4444 100%); }
+        .platform.twitter { background: linear-gradient(135deg, #1da1f2 0%, #0d8bd9 100%); }
+        .platform.facebook { background: linear-gradient(135deg, #4267b2 0%, #365899 100%); }
+        .platform.snapchat { background: linear-gradient(135deg, #fffc00 0%, #fff200 100%); color: #333; }
+
+        .url-input-container {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 20px 60px 20px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .url-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .paste-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .paste-btn:hover {
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .option-group {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .option-group:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .option-label {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .quality-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .quality-btn {
+            padding: 8px 15px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .quality-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .quality-btn:hover {
+            border-color: #667eea;
+            transform: scale(1.05);
+        }
+
+        .format-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .format-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+        }
+
+        .download-btn:active {
+            transform: translateY(0);
+        }
+
+        .download-btn.loading {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+            cursor: not-allowed;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .progress-container.show {
+            opacity: 1;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .feature {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .feature:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .feature h3 {
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .floating-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .shape {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .shape:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 60%;
+            right: 10%;
+            animation-delay: 2s;
+        }
+
+        .shape:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .main-card {
+                padding: 25px;
+                border-radius: 20px;
+            }
+            
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .logo {
+                font-size: 2rem;
+            }
+            
+            .platforms {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="logo">VidGrab</div>
+            <div class="tagline">Download videos from any platform in stunning quality</div>
+        </div>
+
+        <div class="main-card">
+            <div class="platforms">
+                <div class="platform tiktok">TikTok</div>
+                <div class="platform instagram">Instagram</div>
+                <div class="platform youtube">YouTube</div>
+                <div class="platform twitter">Twitter/X</div>
+                <div class="platform facebook">Facebook</div>
+                <div class="platform snapchat">Snapchat</div>
+            </div>
+
+            <div class="url-input-container">
+                <input type="text" class="url-input" placeholder="Paste your video URL here..." id="urlInput">
+                <button class="paste-btn" onclick="pasteFromClipboard()">📋 Paste</button>
+            </div>
+
+            <div class="options-grid">
+                <div class="option-group">
+                    <div class="option-label">Video Quality</div>
+                    <div class="quality-options">
+                        <div class="quality-btn" data-quality="144p">144p</div>
+                        <div class="quality-btn" data-quality="240p">240p</div>
+                        <div class="quality-btn" data-quality="360p">360p</div>
+                        <div class="quality-btn" data-quality="480p">480p</div>
+                        <div class="quality-btn active" data-quality="720p">720p</div>
+                        <div class="quality-btn" data-quality="1080p">1080p</div>
+                        <div class="quality-btn" data-quality="4k">4K</div>
+                    </div>
+                </div>
+
+                <div class="option-group">
+                    <div class="option-label">Output Format</div>
+                    <select class="format-select" id="formatSelect">
+                        <option value="mp4">MP4 (Recommended)</option>
+                        <option value="avi">AVI</option>
+                        <option value="mov">MOV</option>
+                        <option value="mkv">MKV</option>
+                        <option value="mp3">MP3 (Audio Only)</option>
+                        <option value="wav">WAV (Audio Only)</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="download-btn" onclick="startDownload()" id="downloadBtn">
+                🚀 Download Video
+            </button>
+
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">Preparing download...</div>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">⚡</div>
+                <h3>Lightning Fast</h3>
+                <p>Download videos at maximum speed with our optimized servers</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🎵</div>
+                <h3>Perfect Audio</h3>
+                <p>Maintain crystal clear audio quality without any compression loss</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🌐</div>
+                <h3>All Platforms</h3>
+                <p>Support for TikTok, Instagram, YouTube, Twitter, Facebook & more</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🔒</div>
+                <h3>100% Safe</h3>
+                <p>No malware, no ads, completely safe and secure downloads</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Quality selection
+        document.querySelectorAll('.quality-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.quality-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Platform selection animation
+        document.querySelectorAll('.platform').forEach(platform => {
+            platform.addEventListener('click', function() {
+                this.style.animation = 'pulse 0.6s ease';
+                setTimeout(() => {
+                    this.style.animation = '';
+                }, 600);
+            });
+        });
+
+        // Paste from clipboard
+        async function pasteFromClipboard() {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('urlInput').value = text;
+                document.getElementById('urlInput').focus();
+            } catch (err) {
+                console.log('Clipboard access not available');
+                // Fallback for browsers that don't support clipboard API
+                document.getElementById('urlInput').focus();
+                document.getElementById('urlInput').select();
+            }
+        }
+
+        // Download simulation
+        function startDownload() {
+            const btn = document.getElementById('downloadBtn');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const urlInput = document.getElementById('urlInput');
+            
+            if (!urlInput.value.trim()) {
+                urlInput.style.borderColor = '#ff6b6b';
+                urlInput.placeholder = 'Please enter a video URL first!';
+                setTimeout(() => {
+                    urlInput.style.borderColor = '#e0e0e0';
+                    urlInput.placeholder = 'Paste your video URL here...';
+                }, 2000);
+                return;
+            }
+
+            btn.classList.add('loading');
+            btn.innerHTML = '⏳ Processing...';
+            btn.disabled = true;
+            
+            progressContainer.classList.add('show');
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 20;
+                if (progress > 100) progress = 100;
+                
+                progressFill.style.width = progress + '%';
+                
+                if (progress < 30) {
+                    progressText.textContent = 'Analyzing video...';
+                } else if (progress < 60) {
+                    progressText.textContent = 'Extracting media...';
+                } else if (progress < 90) {
+                    progressText.textContent = 'Optimizing quality...';
+                } else if (progress < 100) {
+                    progressText.textContent = 'Finalizing download...';
+                } else {
+                    progressText.textContent = 'Download ready!';
+                    clearInterval(interval);
+                    
+                    // Simulate download completion
+                    setTimeout(() => {
+                        btn.classList.remove('loading');
+                        btn.innerHTML = '✅ Download Complete!';
+                        btn.style.background = 'linear-gradient(135deg, #00b894 0%, #00a085 100%)';
+                        
+                        // Create a sample download link
+                        const link = document.createElement('a');
+                        link.href = '#';
+                        link.download = 'video.' + document.getElementById('formatSelect').value;
+                        link.textContent = 'Your video is ready!';
+                        link.style.display = 'block';
+                        link.style.textAlign = 'center';
+                        link.style.marginTop = '10px';
+                        link.style.color = '#667eea';
+                        link.style.textDecoration = 'none';
+                        link.style.fontWeight = 'bold';
+                        
+                        progressContainer.appendChild(link);
+                        
+                        // Reset after 5 seconds
+                        setTimeout(() => {
+                            btn.classList.remove('loading');
+                            btn.innerHTML = '🚀 Download Video';
+                            btn.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)';
+                            btn.disabled = false;
+                            progressContainer.classList.remove('show');
+                            progressFill.style.width = '0%';
+                            if (link.parentNode) {
+                                link.parentNode.removeChild(link);
+                            }
+                        }, 5000);
+                    }, 500);
+                }
+            }, 200);
+        }
+
+        // URL input validation
+        document.getElementById('urlInput').addEventListener('input', function() {
+            const url = this.value;
+            const platforms = document.querySelectorAll('.platform');
+            
+            platforms.forEach(platform => {
+                platform.style.opacity = '0.5';
+                platform.style.transform = 'scale(0.95)';
+            });
+            
+            if (url.includes('tiktok.com')) {
+                document.querySelector('.platform.tiktok').style.opacity = '1';
+                document.querySelector('.platform.tiktok').style.transform = 'scale(1.05)';
+            } else if (url.includes('instagram.com')) {
+                document.querySelector('.platform.instagram').style.opacity = '1';
+                document.querySelector('.platform.instagram').style.transform = 'scale(1.05)';
+            } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                document.querySelector('.platform.youtube').style.opacity = '1';
+                document.querySelector('.platform.youtube').style.transform = 'scale(1.05)';
+            } else if (url.includes('twitter.com') || url.includes('x.com')) {
+                document.querySelector('.platform.twitter').style.opacity = '1';
+                document.querySelector('.platform.twitter').style.transform = 'scale(1.05)';
+            } else if (url.includes('facebook.com')) {
+                document.querySelector('.platform.facebook').style.opacity = '1';
+                document.querySelector('.platform.facebook').style.transform = 'scale(1.05)';
+            } else if (url.includes('snapchat.com')) {
+                document.querySelector('.platform.snapchat').style.opacity = '1';
+                document.querySelector('.platform.snapchat').style.transform = 'scale(1.05)';
+            } else if (url === '') {
+                platforms.forEach(platform => {
+                    platform.style.opacity = '1';
+                    platform.style.transform = 'scale(1)';
+                });
+            }
+        });
+
+        // Add smooth scrolling and animations on load
+        window.addEventListener('load', function() {
+            document.body.style.opacity = '1';
+        });
+    </script>
+</body>
+</html>
